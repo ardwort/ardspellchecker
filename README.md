@@ -12,8 +12,13 @@ The default port for flask is `5000`
 Usage:
 ======
 Add this snippets to your html page:
-`<link rel="stylesheet" href="http://host_or_domain:port/static/css/spellcheck.css" />`
-`<script type="text/javascript" src="http://host_or_domain:port/static/js/spellcheck.js" />`
+
+```
+<link rel="stylesheet" href="http://host_or_domain:port/static/css/spellcheck.css" />
+<script type="text/javascript" src="http://host_or_domain:port/static/js/spellcheck.js" />
+```
+
+The javascript is a jquery plugins, so if you dont have jquery in your html, you can use the jquery script in `/static/js/libs/`. Make sure that there were no conflict between jquery and your other javascript library.
 
 And then in your bottom page, before `</body>` tag, add this lines:
 ```
