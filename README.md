@@ -57,6 +57,9 @@ And then in your bottom page, before `</body>` tag, add this lines:
 </script>
 ```
 
+LICENSE:
+========
+It's a WTFPL. You just DO WHAT THE FUCK YOU WANT TO.
 
 
 Powered By:
