@@ -18,6 +18,8 @@ import logging
 import os
 import difflib
 from logging.handlers import RotatingFileHandler
+import multiprocessing as mp
+
 def gzipped(f):
     @functools.wraps(f)
     def view_func(*args, **kwargs):
@@ -116,14 +118,35 @@ def crossdomain(origin=None, methods=None, headers=None,
         return update_wrapper(wrapped_function, f)
     return decorator
 
+def worker(arg, q):
+    q.put(arg)
+    return arg
+
+def listener(q):
+    '''listens for messages on the q, writes to file. '''
+    f = open('trainlist.json', 'w+') 
+    while 1:
+        m = q.get()
+        if m == 'kill':
+            break
+        f.write(m)
+        f.flush()
+    f.close()
+
 def words(text): return re.findall('[a-z]+', text.lower()) 
 
-NWORDS = json.loads(open('ardwordlist.json','r').read())
+TRAINS = json.loads(open('trainlist.json','r').read())
+NWORDS = json.loads(open('ardwordlist.json','r').read()) + TRAINS
 stem = ILStemmer()
+
+manager = mp.Manager()
+que = manager.Queue()    
+pool = mp.Pool(mp.cpu_count() + 2)    
+                
 @app.route('/', methods=['GET', 'POST'])
 @crossdomain(origin='*')
 def index():
-    if request.method == "POST":
+    if request.method == "POST":   
         action = request.values.get('action', None)
         if action:
             if action == 'get_incorrect_words':
@@ -143,10 +166,25 @@ def index():
                         if not baseword:
                             true_unmatched.append(a)
                 result = {"outcome":"success","data":[true_unmatched]}
+
             elif action == 'get_suggestions':
                 text = request.values.get('word', None)
                 result = difflib.get_close_matches(text,NWORDS)
                 return Response(json.dumps(result),  mimetype='application/json')
+
+            elif action == 'add_to_dictionary': 
+                watcher = pool.apply_async(listener, (que,))
+                text = request.values.get('word', None)
+                NWORDS.append(text)
+                TRAINS.append(text)
+                job = pool.apply_async(worker, (json.dumps(TRAINS), que))
+                job.get()
+                que.put('kill')
+                pool.close()
+                result = 'success'
+                return Response(json.dumps(result),  mimetype='application/json')
+            else:
+                result = {}
         else:
             result = {}
     else:
@@ -157,5 +195,5 @@ def index():
 
 if __name__ == '__main__':
     app.secret_key = 'inimustidiisiapakirakirayaakujugandakbegitungertisih'
-    app.run()
+    app.run(debug=True)
 

@@ -27,9 +27,11 @@
 .spellchecker-suggestbox .footer {
   border-top: 1px solid #ddd;
 }
-.spellchecker-suggestbox .footer .ignore-all,
-.spellchecker-suggestbox .footer .ignore-forever {
+.spellchecker-suggestbox .footer .ignore-all {
   display: none;
+}
+.spellchecker-suggestbox .footer .ignore-forever {
+  display: block;
 }
 .spellchecker-word-highlight {
   color: red;

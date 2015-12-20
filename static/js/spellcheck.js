@@ -254,7 +254,8 @@
     this.container.on(click, this.onContainerClick.bind(this));
     this.container.on(click, '.ignore-word', selectWordHandler.call(this, 'ignore.word'));
     this.container.on(click, '.ignore-all', this.handler('ignore.all'));
-    this.container.on(click, '.ignore-forever', this.handler('ignore.forever'));
+    //this.container.on(click, '.ignore-forever', this.handler('ignore.forever'));
+    this.container.on(click, '.ignore-forever', selectWordHandler.call(this, 'ignore.forever'));
     this.container.on(click, '.words a', selectWordHandler.call(this, 'select.word'));
     $('html').on(click, this.onWindowClick.bind(this));
     if (this.element[0].nodeName === 'BODY') {
@@ -420,6 +421,16 @@
     return this.makeRequest({
       data: {
         action: 'get_suggestions',
+        word: word
+      },
+      success: callback
+    });
+  };
+
+  WebService.prototype.addToDictionary = function(word, callback) {
+    return this.makeRequest({
+      data: {
+        action: 'add_to_dictionary',
         word: word
       },
       success: callback
@@ -683,6 +694,7 @@
   SpellChecker.prototype.bindEvents = function() {
     this.on('check.fail', this.onCheckFail.bind(this));
     this.suggestBox.on('ignore.word', this.onIgnoreWord.bind(this));
+    this.suggestBox.on('ignore.forever', this.onAddToDictionary.bind(this));
     this.suggestBox.on('select.word', this.onSelectWord.bind(this));
     this.incorrectWords.on('select.word', this.onIncorrectWordSelect.bind(this));
   };
@@ -765,6 +777,14 @@
   SpellChecker.prototype.onIgnoreWord = function(e, word, element) {
     e.preventDefault();
     this.replaceWord(this.incorrectWord, this.incorrectWord);
+  };
+
+  SpellChecker.prototype.onAddToDictionary = function(e, word, element) {
+    e.preventDefault();
+    var isit = confirm("Are you sure you want to add the word \""+this.incorrectWord+"\" to the dictionary?");
+    if(isit == true) {
+      this.webservice.addToDictionary(this.incorrectWord, this.replaceWord(this.incorrectWord, this.incorrectWord));
+    }
   };
 
   SpellChecker.prototype.onIncorrectWordSelect = function(e, word, element, incorrectWords) {
