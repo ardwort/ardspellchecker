@@ -1,4 +1,4 @@
-Flask==0.10.1
+Flask>=0.12.3
 Flask-Autodoc==0.1.2
 Flask-Compress==1.3.0
 itsdangerous==0.24
